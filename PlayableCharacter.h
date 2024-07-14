@@ -25,8 +25,15 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+
 	//Allows Character to Move forward and backwards
 	void MoveRight(float AxisVal);
+
+	// To Begin Sneaking
+	void Sneak();
+
+	// To Stop Sneaking
+	void StopSneak();
 
 private:
 	//Setting Up SideScroller Sytle Camera

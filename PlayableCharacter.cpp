@@ -1,4 +1,6 @@
 #include "../Player/PlayableCharacter.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -7,6 +9,7 @@ APlayableCharacter::APlayableCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
 
 	//CameraSetup
 	CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -41,7 +44,8 @@ void APlayableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &APlayableCharacter::MoveRight);
 	PlayerInputComponent->BindAxis(TEXT("Rotate"), this, &APlayableCharacter::AddControllerYawInput);
 
-
+	PlayerInputComponent->BindAction(TEXT("Sneak"), IE_Pressed, this, &APlayableCharacter::Sneak);
+	PlayerInputComponent->BindAction(TEXT("Sneak"), IE_Released, this, &APlayableCharacter::StopSneak);
 }
 
 //Allow Character to Move Forward and Backwards
@@ -49,6 +53,25 @@ void APlayableCharacter::MoveRight(float AxisVal)
 {
 	AddMovementInput(GetActorForwardVector() * AxisVal);
 }
+
+//Sneaking Mechanic
+void APlayableCharacter::Sneak()
+{
+	if (GetCharacterMovement()->MaxWalkSpeed == 200.f)
+	{
+		GetCharacterMovement()->MaxWalkSpeed *= 0.5;
+	}
+}
+
+void APlayableCharacter::StopSneak()
+{
+	if (GetCharacterMovement()->MaxWalkSpeed < 200.f)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	}
+}
+
+
 
 
 
