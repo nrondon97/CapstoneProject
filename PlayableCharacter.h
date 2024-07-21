@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/BoxComponent.h"
+#include "../HiddingObjects.h"
 #include "PlayableCharacter.generated.h"
 
 UCLASS()
@@ -16,6 +18,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	//variables
+	bool IsPlayerHidden;
+	AHiddingObjects* CurrentHidingObject;
+
 
 public:	
 	// Called every frame
@@ -35,6 +42,11 @@ protected:
 	// To Stop Sneaking
 	void StopSneak();
 
+	//Hiding Mechanic
+	void Hide();
+ 
+
+
 private:
 	//Setting Up SideScroller Sytle Camera
 	UPROPERTY(VisibleAnywhere, Category = Camera);
@@ -42,6 +54,20 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Camera);
 	class UCameraComponent* FollowCamera;
+
+
+	//Setup Overlap for Hiding Objects
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* CollisionBox; // Collision box for overlap check
 
 
 };
