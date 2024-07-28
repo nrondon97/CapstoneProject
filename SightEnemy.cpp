@@ -9,7 +9,7 @@ ASightEnemy::ASightEnemy()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	GetCharacterMovement()->MaxWalkSpeed = 150.f; //Make the enemy slightly slower than the player to allow player time to hide
+	GetCharacterMovement()->MaxWalkSpeed = 350.f; //Make the enemy slightly faster than the player
 
 }
 
@@ -33,4 +33,5 @@ void ASightEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
 

@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
 #include "../HiddingObjects.h"
+#include "SightEnemy.h"
 #include "PlayableCharacter.generated.h"
 
 UCLASS()
@@ -30,6 +31,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//Setup Dying and Spawning Mechanic
+	void Die();
+	void Respawn();
 
 protected:
 

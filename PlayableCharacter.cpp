@@ -2,6 +2,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -66,6 +67,22 @@ void APlayableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction(TEXT("Hide"), IE_Pressed, this, &APlayableCharacter::Hide);
 }
 
+void APlayableCharacter::Die()
+{
+	//Add a Death Screen
+
+	UE_LOG(LogTemp, Warning, TEXT("Character has died"));
+	//Call Respawn
+	this->Respawn();
+}
+
+void APlayableCharacter::Respawn()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Level Restart"));
+	//Restart Game
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
 //Allow Character to Move Forward and Backwards
 void APlayableCharacter::MoveRight(float AxisVal)
 {
@@ -123,7 +140,7 @@ void APlayableCharacter::Hide()
 
 }
 
-//Interacting with Hiding Objects
+//Interacting with Anything 
 void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Check if the overlapping object is a hiding object
@@ -131,6 +148,13 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 	if (HiddingObject)
 	{
 		CurrentHidingObject = HiddingObject;
+	}
+	//Check if the overlapping Object is an enemy
+	ASightEnemy* SightEnemy = Cast<ASightEnemy>(OtherActor);
+	if (SightEnemy)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlapping with SightEnemy"));
+		this->Die();
 	}
 }
 
