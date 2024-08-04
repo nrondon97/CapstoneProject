@@ -16,6 +16,7 @@ APlayableCharacter::APlayableCharacter()
 	//Variables
 	IsPlayerHidden = false;
 	CurrentHidingObject = nullptr;
+	NoiseLevel = 1.0f;
 
 	//Collison
 	// Create and set up the collision box 
@@ -38,6 +39,9 @@ APlayableCharacter::APlayableCharacter()
 	FollowCamera->SetupAttachment(CameraArm, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	// Noise Emitter
+	NoiseEmitter = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
+
 }
 
 // Called when the game starts or when spawned
@@ -51,6 +55,12 @@ void APlayableCharacter::BeginPlay()
 void APlayableCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking && NoiseLevel > 0.0f)
+	{
+		EmitNoise(NoiseLevel);  // Sound Level for normal movement
+		UE_LOG(LogTemp, Warning, TEXT("Character is Moving"));
+	}
 
 }
 
@@ -94,7 +104,12 @@ void APlayableCharacter::Sneak()
 {
 	if (GetCharacterMovement()->MaxWalkSpeed == 200.f)
 	{
-		GetCharacterMovement()->MaxWalkSpeed *= 0.5;
+		GetCharacterMovement()->MaxWalkSpeed *= 0.5; //Slow the character down
+		if (NoiseLevel > 0.0f)
+		{
+			NoiseLevel = 0.0f;  // Reduce noise when sneaking
+			UE_LOG(LogTemp, Warning, TEXT("Character is Not Making Noise"));
+		}
 	}
 }
 
@@ -102,9 +117,24 @@ void APlayableCharacter::StopSneak()
 {
 	if (GetCharacterMovement()->MaxWalkSpeed < 200.f)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 200.f;
+		GetCharacterMovement()->MaxWalkSpeed = 200.f; //Return to normal speed
+		if (NoiseLevel == 0.0f)
+		{
+			NoiseLevel = 1.0f;  // Increase noise when stopping sneak
+			UE_LOG(LogTemp, Warning, TEXT("Character is Making Noise"));
+		}
 	}
 }
+
+void APlayableCharacter::EmitNoise(float Loudness)
+{
+		if (NoiseEmitter)
+		{
+			NoiseEmitter->MakeNoise(this, Loudness, GetActorLocation());
+			UE_LOG(LogTemp, Warning, TEXT("Character is Making Noise"));
+		}
+}
+
 
 //Hiding Function
 void APlayableCharacter::Hide()
@@ -118,6 +148,7 @@ void APlayableCharacter::Hide()
 			SetActorHiddenInGame(true);
 			SetActorEnableCollision(false);
 			GetCharacterMovement()->DisableMovement(); //Disable movement
+			NoiseLevel = 0.0f;  // Reduce noise when hidden
 			UE_LOG(LogTemp, Log, TEXT("Character is now hidden. IsPlayerHidden: %s, Collision: %s, MovementMode: %d"),
 				IsPlayerHidden ? TEXT("true") : TEXT("false"),
 				GetActorEnableCollision() ? TEXT("true") : TEXT("false"),
@@ -131,6 +162,7 @@ void APlayableCharacter::Hide()
 		SetActorHiddenInGame(false);
 		SetActorEnableCollision(true);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); //Enable Movement
+		NoiseLevel = 1.0f;  // Return to normal status
 		UE_LOG(LogTemp, Log, TEXT("Character is now unhidden. IsPlayerHidden: %s, Collision: %s, MovementMode: %d"),
 			IsPlayerHidden ? TEXT("true") : TEXT("false"),
 			GetActorEnableCollision() ? TEXT("true") : TEXT("false"),
@@ -154,6 +186,13 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 	if (SightEnemy)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlapping with SightEnemy"));
+		this->Die();
+	}
+	//Check if the overlapping Object is an enemy
+	AHearingEnemy* HearingEnemy = Cast<AHearingEnemy>(OtherActor);
+	if (HearingEnemy)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlapping with HearingEnemy"));
 		this->Die();
 	}
 }

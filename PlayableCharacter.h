@@ -5,6 +5,9 @@
 #include "Components/BoxComponent.h"
 #include "../HiddingObjects.h"
 #include "SightEnemy.h"
+#include "../HearingEnemy.h"
+#include "Engine/World.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 #include "PlayableCharacter.generated.h"
 
 UCLASS()
@@ -22,6 +25,7 @@ protected:
 
 	//variables
 	bool IsPlayerHidden;
+	float NoiseLevel;
 	AHiddingObjects* CurrentHidingObject;
 
 
@@ -46,6 +50,9 @@ protected:
 
 	// To Stop Sneaking
 	void StopSneak();
+
+	//Make the Character Noise
+	void EmitNoise(float Loudness); 
 
 	//Hiding Mechanic
 	void Hide();
@@ -73,6 +80,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox; // Collision box for overlap check
+
+	UPROPERTY(VisibleAnywhere)
+	UPawnNoiseEmitterComponent* NoiseEmitter;
 
 
 };
