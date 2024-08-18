@@ -6,6 +6,7 @@
 #include "../HiddingObjects.h"
 #include "SightEnemy.h"
 #include "../HearingEnemy.h"
+#include "../EndGameTrigger.h"
 #include "Engine/World.h"
 #include "Components/PawnNoiseEmitterComponent.h"
 #include "PlayableCharacter.generated.h"
@@ -25,6 +26,7 @@ protected:
 
 	//variables
 	bool IsPlayerHidden;
+	bool HaveComfortObject;
 	float NoiseLevel;
 	AHiddingObjects* CurrentHidingObject;
 

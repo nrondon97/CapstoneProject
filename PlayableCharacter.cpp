@@ -1,4 +1,5 @@
 #include "../Player/PlayableCharacter.h"
+#include "../ComfortObjective.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,6 +16,7 @@ APlayableCharacter::APlayableCharacter()
 
 	//Variables
 	IsPlayerHidden = false;
+	HaveComfortObject = false;
 	CurrentHidingObject = nullptr;
 	NoiseLevel = 1.0f;
 
@@ -56,7 +58,8 @@ void APlayableCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking && NoiseLevel > 0.0f)
+	//Make noise only when walking
+	if (GetVelocity().Size() > 0.0f && NoiseLevel > 0.0f)
 	{
 		EmitNoise(NoiseLevel);  // Sound Level for normal movement
 		UE_LOG(LogTemp, Warning, TEXT("Character is Moving"));
@@ -194,6 +197,25 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlapping with HearingEnemy"));
 		this->Die();
+	}
+	//Check if overlap with the ComfortObject
+	AComfortObjective* ComfortObjective = Cast<AComfortObjective>(OtherActor);
+	if (ComfortObjective)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlapping with Comfort Objective"));
+		HaveComfortObject = true;
+	}
+
+	//Check if overlap with the EngGameTrigger
+	AEndGameTrigger* EndGameTrigger = Cast<AEndGameTrigger>(OtherActor);
+	if (ComfortObjective)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlapping with trigger"));
+		if (HaveComfortObject) //Check if have the comfort objective
+		{
+
+			UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenuMap"));
+		}
 	}
 }
 
