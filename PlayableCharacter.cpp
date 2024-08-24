@@ -19,6 +19,8 @@ APlayableCharacter::APlayableCharacter()
 	HaveComfortObject = false;
 	CurrentHidingObject = nullptr;
 	NoiseLevel = 1.0f;
+	AxisValueTracker = 0.0f;
+	IsSneaking = false;
 
 	//Collison
 	// Create and set up the collision box 
@@ -57,12 +59,14 @@ void APlayableCharacter::BeginPlay()
 void APlayableCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//Make noise only when walking
-	if (GetVelocity().Size() > 0.0f && NoiseLevel > 0.0f)
+	if (AxisValueTracker != 0.0f && IsSneaking == false) //If character is still make no noise
 	{
-		EmitNoise(NoiseLevel);  // Sound Level for normal movement
-		UE_LOG(LogTemp, Warning, TEXT("Character is Moving"));
+		NoiseLevel = 1.0f;
+		EmitNoise(NoiseLevel);
+	}
+	else
+	{
+		StopNoise();
 	}
 
 }
@@ -100,7 +104,12 @@ void APlayableCharacter::Respawn()
 void APlayableCharacter::MoveRight(float AxisVal)
 {
 	AddMovementInput(GetActorForwardVector() * AxisVal);
+	if (AxisVal > 0.0f || AxisValueTracker < 0.0f)
+	{
+		AxisValueTracker = AxisVal;
+	}
 }
+
 
 //Sneaking Mechanic
 void APlayableCharacter::Sneak()
@@ -108,9 +117,10 @@ void APlayableCharacter::Sneak()
 	if (GetCharacterMovement()->MaxWalkSpeed == 200.f)
 	{
 		GetCharacterMovement()->MaxWalkSpeed *= 0.5; //Slow the character down
+		IsSneaking = true;
 		if (NoiseLevel > 0.0f)
 		{
-			NoiseLevel = 0.0f;  // Reduce noise when sneaking
+			StopNoise();
 			UE_LOG(LogTemp, Warning, TEXT("Character is Not Making Noise"));
 		}
 	}
@@ -121,21 +131,37 @@ void APlayableCharacter::StopSneak()
 	if (GetCharacterMovement()->MaxWalkSpeed < 200.f)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 200.f; //Return to normal speed
+		IsSneaking = false;
 		if (NoiseLevel == 0.0f)
 		{
-			NoiseLevel = 1.0f;  // Increase noise when stopping sneak
+				NoiseLevel = 1.0f;  // Increase noise when stopping sneak
+				EmitNoise(NoiseLevel);
+				UE_LOG(LogTemp, Warning, TEXT("Character is Making Noise: Sneak Edition"));
+		}
+	}
+}
+
+//Controls Noise Character Emits for HearingEnemy
+void APlayableCharacter::EmitNoise(float Loudness)
+{
+	if (AxisValueTracker > 0.0f || AxisValueTracker < 0.0f) //Only if moving
+	{
+		if (NoiseEmitter && Loudness > 0.0f)
+		{
+			NoiseEmitter->MakeNoise(this, Loudness, GetActorLocation());
 			UE_LOG(LogTemp, Warning, TEXT("Character is Making Noise"));
 		}
 	}
 }
 
-void APlayableCharacter::EmitNoise(float Loudness)
+//Make the character silent 
+void APlayableCharacter::StopNoise()
 {
-		if (NoiseEmitter)
-		{
-			NoiseEmitter->MakeNoise(this, Loudness, GetActorLocation());
-			UE_LOG(LogTemp, Warning, TEXT("Character is Making Noise"));
-		}
+	// Set noise level to 0 to suppress noise
+	NoiseLevel = 0.0f;
+	// Ensure no noise is emitted
+	EmitNoise(NoiseLevel);
+	UE_LOG(LogTemp, Warning, TEXT("Character is Quiet"));
 }
 
 
@@ -204,11 +230,13 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlapping with Comfort Objective"));
 		HaveComfortObject = true;
+		// Log the value of HaveComfortObject
+		UE_LOG(LogTemp, Warning, TEXT("HaveComfortObject = %s"), HaveComfortObject ? TEXT("true") : TEXT("false"));
 	}
 
 	//Check if overlap with the EngGameTrigger
 	AEndGameTrigger* EndGameTrigger = Cast<AEndGameTrigger>(OtherActor);
-	if (ComfortObjective)
+	if (EndGameTrigger)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlapping with trigger"));
 		if (HaveComfortObject) //Check if have the comfort objective
@@ -219,6 +247,7 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 	}
 }
 
+//Null hidding bool to prevent character from hiding when not near a collision box
 void APlayableCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherActor == CurrentHidingObject)

@@ -12,7 +12,7 @@ class CAPSTONEPROJECT_API AComfortObjective : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+	// Sets default values
 	AComfortObjective();
 
 protected:

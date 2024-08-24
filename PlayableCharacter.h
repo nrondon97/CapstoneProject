@@ -27,7 +27,9 @@ protected:
 	//variables
 	bool IsPlayerHidden;
 	bool HaveComfortObject;
+	bool IsSneaking;
 	float NoiseLevel;
+	float AxisValueTracker;
 	AHiddingObjects* CurrentHidingObject;
 
 
@@ -54,7 +56,9 @@ protected:
 	void StopSneak();
 
 	//Make the Character Noise
-	void EmitNoise(float Loudness); 
+	void EmitNoise(float Loudness);
+	void StopNoise();
+
 
 	//Hiding Mechanic
 	void Hide();
@@ -83,6 +87,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox; // Collision box for overlap check
 
+	//Proprty For Noise Emitter
 	UPROPERTY(VisibleAnywhere)
 	UPawnNoiseEmitterComponent* NoiseEmitter;
 

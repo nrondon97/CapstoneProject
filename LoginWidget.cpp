@@ -1,4 +1,4 @@
-
+//This was for a login assignment earlier on. Not needed for final project.
 #include "LoginWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/EditableTextBox.h"
